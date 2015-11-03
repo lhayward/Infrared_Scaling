@@ -112,30 +112,23 @@ total = np.zeros(len(alpha))
 
 fout_res=[0 for i in alpha]
 for i,n in enumerate(alpha):
-  filename = "results_SVsL_mass" + decimalStr(massterm) + "_alpha" + decimalStr(n) + ".txt"
+  if per:
+    filename = "results_PBC_SVsL_mass" + decimalStr(massterm) + "_alpha" + decimalStr(n) + ".txt"
+  else:
+    filename = "results_OBC_SVsL_mass" + decimalStr(massterm) + "_alpha" + decimalStr(n) + ".txt"
   fout_res[i] = open(filename, 'w')
 
 for L in range(L_min,L_max+1):
   print
   print "L = %d:" %L
-#   for Lx,Ly,Lz in order.clusters(ord):
-#     curr_clust_name = clust_weight.clust_name(Lx,Ly,Lz)
-#     print "  " + curr_clust_name
-#     sys.stdout.flush()
-#     
-#     w = clust_weight.weight(Lx,Ly,Lz,w,alpha,massterm) # performs cluster weight calculations
-#     #Embedding factor:
-#     ef = 6
-#     if Lx==Ly and Ly==Lz: ef = 1
-#     elif Lx==Ly or Lx==Lz or Ly==Lz: ef = 3
-#     
-#     total = total + ef*w[curr_clust_name]
-#   #end loop over loop over clusters
-#     
-#   # Save result to file
-#   for i in range(len(alpha)):
-#     fout_res[i].write("%d %.15f"%(ord,total[i])+'\n')
-#     fout_res[i].flush()
+
+  entropy = free_boson.getEntropy_singleSite(L,per,alpha,massterm)
+  print "  %f" %entropy
+    
+  # Save result to file
+  for i in range(len(alpha)):
+    fout_res[i].write("%d %.15f"%(L,entropy[i])+'\n')
+    fout_res[i].flush()
 #end loop over orders
 
 for fout in fout_res:
