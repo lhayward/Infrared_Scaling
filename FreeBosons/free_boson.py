@@ -69,16 +69,14 @@ def getEntropy_singleSite_2D_K(L,bc,alpha,massterm):
 #................................END getEntropy_singleSite_2D_K................................
 
 ###############################################################################################
-#################################  getEntropy_singleSite_2D  ##################################
+###################################  getXAPA_singleSite_2D  ###################################
 ###############################################################################################
-# This method uses the known formulas for the correlation functions (for periodic or Dirichlet
-# boundary conditions). 
-def getEntropy_singleSite_2D(L,bc,alpha,massterm):
+def getXAPA_singleSite_2D(L,bc,alpha,massterm):
   Lx = Ly = L
   x_A = int(Lx)/2
   y_A = int(Ly)/2
   
-  def omega(qx,qy):
+  def omega_2D(qx,qy):
     return np.sqrt( 4*np.sin(qx/2.0)**2 + 4*np.sin(qy/2.0)**2 + massterm**2 )
   
   XA = 0
@@ -101,8 +99,8 @@ def getEntropy_singleSite_2D(L,bc,alpha,massterm):
           ky = (2*ny + 1)*np.pi/(Ly)
           
         #Set x_A = y_A = 0:
-        XA = XA + (1.0/omega(kx,ky))
-        PA = PA + omega(kx,ky)
+        XA = XA + (1.0/omega_2D(kx,ky))
+        PA = PA + omega_2D(kx,ky)
       #end loop over ny
     #end loop over nx
       
@@ -120,7 +118,17 @@ def getEntropy_singleSite_2D(L,bc,alpha,massterm):
     PA = 2.0/((Lx+1)*(Ly+1))*PA
   #end OBC case
   else:
-    print "\n*** ERROR: getEntropy_singleSite_2D does not accept boundary condition '" + bc + "' ***\n"
+    print "\n*** ERROR: In 2D, the boundary condition '" + bc + "' is not accepted.***\n"
+  
+  return XA,PA
+
+###############################################################################################
+###################################  getEntropy_singleSite  ###################################
+###############################################################################################
+# This method uses the known formulas for the correlation functions (for periodic or Dirichlet
+# boundary conditions). 
+def getEntropy_singleSite(L,bc,alpha,massterm):
+  XA, PA = getXAPA_singleSite_2D(L,bc,alpha,massterm)
   CA = np.sqrt(XA*PA)
   
   Sn = np.zeros(len(alpha))

@@ -135,7 +135,7 @@ if bc in BC_options:
     print "L = %d:" %L
     sys.stdout.flush()
 
-    entropy = free_boson.getEntropy_singleSite_2D(L,bc,alpha,massterm)
+    entropy = free_boson.getEntropy_singleSite(L,bc,alpha,massterm)
     print "  %f" %entropy
     
     # Save result to file
