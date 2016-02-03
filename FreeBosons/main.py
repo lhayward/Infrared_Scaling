@@ -59,7 +59,7 @@ def readParams(filename):
   filename = "input.txt"
   L_min    = 1
   L_max    = 1
-  per      = False
+  bc       = 'PBC'
   massterm = 1
   alpha    = [1]
   if os.path.isfile(filename):
@@ -72,7 +72,7 @@ def readParams(filename):
     L_max = int(line[ max(0,line.find('='))+1:])
     
     line=fin.readline()
-    per = bool(int(line[ max(0,line.find('='))+1:]))
+    bc = line[ max(0,line.find('='))+1:].strip()
     
     line=fin.readline()
     massterm = float(line[ max(0,line.find('='))+1:])
@@ -81,7 +81,7 @@ def readParams(filename):
     alpha = [float(a) for a in readArray(line).split()]
     
     fin.close()
-  return L_min,L_max,per,massterm,alpha
+  return L_min,L_max,bc,massterm,alpha
 
 ###############################################################################################
 ###########################################  main  ############################################
@@ -96,43 +96,53 @@ def readParams(filename):
 # massterm = 0.0
 
 ###OR: read input from file:
-L_min,L_max,per,massterm,alpha = readParams("input.txt")
+L_min,L_max,bc,massterm,alpha = readParams("input.txt")
 #############################
 
-print
-print "L_min = %d" %L_min
-print "L_max = %d" %L_max
-print "PBC   = " + str(per)
-print "mass  = %f" %massterm
-print "alpha = " + str(alpha)
+BC_options = ['PBC', 'APBC', 'APBCx', 'APBCy', 'OBCDir', 'OBCNeu']
+printInDir = False  #whether or not to print into directories names by BC
 
-t1 = time.clock()
+if bc in BC_options:
 
-total = np.zeros(len(alpha))
-
-fout_res=[0 for i in alpha]
-for i,n in enumerate(alpha):
-  if per:
-    filename = "results_PBC_SVsL_mass" + decimalStr(massterm) + "_alpha" + decimalStr(n) + ".txt"
-  else:
-    filename = "results_OBC_SVsL_mass" + decimalStr(massterm) + "_alpha" + decimalStr(n) + ".txt"
-  fout_res[i] = open(filename, 'w')
-
-for L in range(L_min,L_max+1):
   print
-  print "L = %d:" %L
+  print "L_min = %d" %L_min
+  print "L_max = %d" %L_max
+  print "BC    = " + str(bc)
+  print "mass  = %f" %massterm
+  print "alpha = " + str(alpha)
 
-  entropy = free_boson.getEntropy_singleSite(L,per,alpha,massterm)
-  print "  %f" %entropy
+  t1 = time.clock()
+
+  total = np.zeros(len(alpha))
+
+  fout_res=[0 for i in alpha]
+  for i,n in enumerate(alpha):
+    filename = "results_" + bc + "_SVsL_mass" + decimalStr(massterm) + "_alpha" + decimalStr(n) + ".txt"
+  
+    if printInDir:
+      if not(os.path.isdir(bc)):
+        os.mkdir(bc)
+      filename = bc + '/' + filename
+    fout_res[i] = open(filename, 'w')
+
+  for L in range(L_min,L_max+1):
+    print
+    print "L = %d:" %L
+    sys.stdout.flush()
+
+    entropy = free_boson.getEntropy_singleSite(L,bc,alpha,massterm)
+    print "  %f" %entropy
     
-  # Save result to file
-  for i in range(len(alpha)):
-    fout_res[i].write("%d %.15f"%(L,entropy[i])+'\n')
-    fout_res[i].flush()
-#end loop over orders
+    # Save result to file
+    for i in range(len(alpha)):
+      fout_res[i].write("%d %.15f"%(L,entropy[i])+'\n')
+      fout_res[i].flush()
+  #end loop over orders
 
-for fout in fout_res:
-  fout.close()
+  for fout in fout_res:
+    fout.close()
 
-t2 = time.clock()
-print "Total time: " + str(t2-t1) + " sec."
+  t2 = time.clock()
+  print "Total time: " + str(t2-t1) + " sec."
+else:
+  print "\n*** ERROR: Boundary condition '" + bc + "' not supported ***\n"
