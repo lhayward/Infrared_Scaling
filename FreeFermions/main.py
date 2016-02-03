@@ -1,9 +1,12 @@
 import free_fermion_2D
 import numpy as np
 import argparse
+import sys
+import time
 
 parser=argparse.ArgumentParser(description="Full diagonalization of free fermion Hamiltonian in 2D for squares")
 
+#Eg: python main.py -l 2 30 1 -b obc -m 0
 parser.add_argument('--L','-l',type=int,nargs='+',help='System size, range possible',required=True)
 parser.add_argument('--Ratio','-r',type=int,default=2,help='Ratio between linear extent of subsystem A and total system (--L), default=2')
 parser.add_argument('--BC','-b',default='obc',help='Boundary conditions (pbc, obc, apc), default=obc')
@@ -94,12 +97,19 @@ else:
     obc = False
 fout = open(filename, 'w')
 
+t1 = time.clock()
+
 for l in L:
     print "L = %d:" %l
+    sys.stdout.flush()
     entropy=free_fermion_2D.getEntropy((l,l),alpha,RegionA(l,1,0,0,obc),getHamiltonian(l,l,args.BC,massterm=args.Mass))[0]
     #print l/ratio, free_fermion_2D.getEntropy((l,l),alpha,RegionA(l,l/ratio,False),getHamiltonian(l,l,args.BC,massterm=args.Mass))[0]
     #print l, free_fermion_2D.getEntropy((l,l),[1.0],RegionA(l,1),getHamiltonian(l,l,args.BC))[0]
     print "  %f" %entropy
     fout.write("%d %.15f"%(l,entropy)+'\n')
+    fout.flush()
 
 fout.close()
+
+t2 = time.clock()
+print "Total time: " + str(t2-t1) + " sec."
