@@ -6,9 +6,9 @@ import numpy as np
 #Ev_tol = 10e-16
 
 ###############################################################################################
-##################################  getEntropy_singleSite_K  ##################################
+################################  getEntropy_singleSite_2D_K  #################################
 ###############################################################################################
-def getEntropy_singleSite_K(L,bc,alpha,massterm):
+def getEntropy_singleSite_2D_K(L,bc,alpha,massterm):
   #PBC or not along the x and y directions:
   perx = pery = False
   if bc == 'PBC':
@@ -66,14 +66,14 @@ def getEntropy_singleSite_K(L,bc,alpha,massterm):
       Sn[i] = 1.0/(n-1.0)*np.sum( np.log( (Ev_new+1./2)**n - (Ev_new-1./2.)**n ) )
   
   return Sn
-#.................................END getEntropy_singleSite_K..................................
+#................................END getEntropy_singleSite_2D_K................................
 
 ###############################################################################################
-###################################  getEntropy_singleSite  ###################################
+#################################  getEntropy_singleSite_2D  ##################################
 ###############################################################################################
 # This method uses the known formulas for the correlation functions (for periodic or Dirichlet
 # boundary conditions). 
-def getEntropy_singleSite(L,bc,alpha,massterm):
+def getEntropy_singleSite_2D(L,bc,alpha,massterm):
   Lx = Ly = L
   x_A = int(Lx)/2
   y_A = int(Ly)/2
@@ -108,7 +108,7 @@ def getEntropy_singleSite(L,bc,alpha,massterm):
       
     XA = 1.0/(2.0*Lx*Ly)*XA
     PA = 1.0/(2.0*Lx*Ly)*PA
-  else:   #Dirichlet OBC
+  elif bc == 'OBCDir':   #Dirichlet OBC
     for nx in range(1,Lx+1):
       for ny in range(1,Ly+1):
         qx = nx*np.pi/(Lx+1)
@@ -119,6 +119,8 @@ def getEntropy_singleSite(L,bc,alpha,massterm):
     XA = 2.0/((Lx+1)*(Ly+1))*XA
     PA = 2.0/((Lx+1)*(Ly+1))*PA
   #end OBC case
+  else:
+    print "\n*** ERROR: getEntropy_singleSite_2D does not accept boundary condition '" + bc + "' ***\n"
   CA = np.sqrt(XA*PA)
   
   Sn = np.zeros(len(alpha))
@@ -132,7 +134,7 @@ def getEntropy_singleSite(L,bc,alpha,massterm):
       Sn[i] = 0
   
   return Sn
-#.................................END getEntropy_singleSite_2..................................
+#................................END getEntropy_singleSite_2D..................................
 
 
 

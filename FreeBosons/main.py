@@ -57,6 +57,7 @@ def readArray(line):
 #
 def readParams(filename):
   filename = "input.txt"
+  D        = 2
   L_min    = 1
   L_max    = 1
   bc       = 'PBC'
@@ -64,6 +65,9 @@ def readParams(filename):
   alpha    = [1]
   if os.path.isfile(filename):
     fin = open(filename,'r')
+    
+    line=fin.readline()
+    D = int(line[ max(0,line.find('='))+1:])
     
     line=fin.readline()
     L_min = int(line[ max(0,line.find('='))+1:])
@@ -81,7 +85,7 @@ def readParams(filename):
     alpha = [float(a) for a in readArray(line).split()]
     
     fin.close()
-  return L_min,L_max,bc,massterm,alpha
+  return D,L_min,L_max,bc,massterm,alpha
 
 ###############################################################################################
 ###########################################  main  ############################################
@@ -96,7 +100,7 @@ def readParams(filename):
 # massterm = 0.0
 
 ###OR: read input from file:
-L_min,L_max,bc,massterm,alpha = readParams("input.txt")
+D,L_min,L_max,bc,massterm,alpha = readParams("input.txt")
 #############################
 
 BC_options = ['PBC', 'APBC', 'APBCx', 'APBCy', 'OBCDir', 'OBCNeu']
@@ -105,6 +109,7 @@ printInDir = False  #whether or not to print into directories names by BC
 if bc in BC_options:
 
   print
+  print "dim.  = %d" %D
   print "L_min = %d" %L_min
   print "L_max = %d" %L_max
   print "BC    = " + str(bc)
@@ -130,7 +135,7 @@ if bc in BC_options:
     print "L = %d:" %L
     sys.stdout.flush()
 
-    entropy = free_boson.getEntropy_singleSite(L,bc,alpha,massterm)
+    entropy = free_boson.getEntropy_singleSite_2D(L,bc,alpha,massterm)
     print "  %f" %entropy
     
     # Save result to file
