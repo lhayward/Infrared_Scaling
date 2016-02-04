@@ -127,8 +127,14 @@ def getXAPA_singleSite_2D(L,bc,alpha,massterm):
 ###############################################################################################
 # This method uses the known formulas for the correlation functions (for periodic or Dirichlet
 # boundary conditions). 
-def getEntropy_singleSite(L,bc,alpha,massterm):
-  XA, PA = getXAPA_singleSite_2D(L,bc,alpha,massterm)
+def getEntropy_singleSite(D,L,bc,alpha,massterm):
+  XA = 0
+  PA = 0
+  
+  if D==2:
+    XA, PA = getXAPA_singleSite_2D(L,bc,alpha,massterm)
+  else:
+    print "\n*** ERROR: Calculations in %d dimensions are not supported.***\n" %D
   CA = np.sqrt(XA*PA)
   
   Sn = np.zeros(len(alpha))

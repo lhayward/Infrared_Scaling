@@ -122,7 +122,7 @@ if bc in BC_options:
 
   fout_res=[0 for i in alpha]
   for i,n in enumerate(alpha):
-    filename = "results_" + bc + "_SVsL_mass" + decimalStr(massterm) + "_alpha" + decimalStr(n) + ".txt"
+    filename = "results_" + str(D) + "D_" + bc + "_SVsL_mass" + decimalStr(massterm) + "_alpha" + decimalStr(n) + ".txt"
   
     if printInDir:
       if not(os.path.isdir(bc)):
@@ -135,7 +135,7 @@ if bc in BC_options:
     print "L = %d:" %L
     sys.stdout.flush()
 
-    entropy = free_boson.getEntropy_singleSite(L,bc,alpha,massterm)
+    entropy = free_boson.getEntropy_singleSite(D,L,bc,alpha,massterm)
     print "  %f" %entropy
     
     # Save result to file
