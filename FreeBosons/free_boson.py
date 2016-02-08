@@ -5,7 +5,6 @@ import numpy as np
 
 #Ev_tol = 10e-16
 
-###############################################################################################
 ################################  getEntropy_singleSite_2D_K  #################################
 ###############################################################################################
 def getEntropy_singleSite_2D_K(L,bc,alpha,massterm):
@@ -68,13 +67,11 @@ def getEntropy_singleSite_2D_K(L,bc,alpha,massterm):
   return Sn
 #................................END getEntropy_singleSite_2D_K................................
 
-###############################################################################################
 ###################################  getXAPA_singleSite_2D  ###################################
+# Gets the XA, PA numbers for the case where the system is 2D and region A is a single site.
 ###############################################################################################
 def getXAPA_singleSite_2D(L,bc,alpha,massterm):
   Lx = Ly = L
-  x_A = int(Lx)/2
-  y_A = int(Ly)/2
   
   def omega_2D(qx,qy):
     return np.sqrt( 4*np.sin(qx/2.0)**2 + 4*np.sin(qy/2.0)**2 + massterm**2 )
@@ -107,13 +104,15 @@ def getXAPA_singleSite_2D(L,bc,alpha,massterm):
     XA = 1.0/(2.0*Lx*Ly)*XA
     PA = 1.0/(2.0*Lx*Ly)*PA
   elif bc == 'OBCDir':   #Dirichlet OBC
+    x_A = int(Lx)/2
+    y_A = int(Ly)/2 
     for nx in range(1,Lx+1):
       for ny in range(1,Ly+1):
         qx = nx*np.pi/(Lx+1)
         qy = ny*np.pi/(Ly+1)
         #use (x_A + 1) because Sharmistha's paper uses indices starting at 1
-        XA = XA + np.sin(qx*(x_A+1))**2*np.sin(qy*(y_A+1))**2/omega(qx,qy)
-        PA = PA + np.sin(qx*(x_A+1))**2*np.sin(qy*(y_A+1))**2*omega(qx,qy)
+        XA = XA + np.sin(qx*(x_A+1))**2*np.sin(qy*(y_A+1))**2/omega_2D(qx,qy)
+        PA = PA + np.sin(qx*(x_A+1))**2*np.sin(qy*(y_A+1))**2*omega_2D(qx,qy)
     XA = 2.0/((Lx+1)*(Ly+1))*XA
     PA = 2.0/((Lx+1)*(Ly+1))*PA
   #end OBC case
@@ -122,17 +121,141 @@ def getXAPA_singleSite_2D(L,bc,alpha,massterm):
   
   return XA,PA
 
+###################################  getXAPA_singleSite_3D  ###################################
+# Gets the XA, PA numbers for the case where the system is 3D and region A is a single site.
 ###############################################################################################
+def getXAPA_singleSite_3D(L,bc,alpha,massterm):
+  Lx = Ly = Lz = L
+  
+  def omega_3D(qx,qy,qz):
+    return np.sqrt( 4*np.sin(qx/2.0)**2 + 4*np.sin(qy/2.0)**2 + 4*np.sin(qz/2.0)**2 + massterm**2 )
+  
+  XA = 0
+  PA = 0
+  print bc
+  if bc in ['PBC', 'APBC', 'APBCx', 'APBCxy']:   #PBC or APBC
+    for nx in range(Lx):
+      for ny in range(Ly):
+        for nz in range(Lz):
+          if bc == 'PBC':
+            kx = 2*nx*np.pi/(Lx)
+            ky = 2*ny*np.pi/(Ly)
+            kz = 2*nz*np.pi/(Lz)
+          elif bc == 'APBC':
+            kx = (2*nx + 1)*np.pi/(Lx)
+            ky = (2*ny + 1)*np.pi/(Ly)
+            kz = (2*nz + 1)*np.pi/(Lz)
+          elif bc == 'APBCx':
+            kx = (2*nx + 1)*np.pi/(Lx)
+            ky = 2*ny*np.pi/(Ly)
+            kz = 2*nz*np.pi/(Lz)
+          else: #APBCxy
+            kx = (2*nx + 1)*np.pi/(Lx)
+            ky = (2*ny + 1)*np.pi/(Ly)
+            kz = 2*nz*np.pi/(Lz)
+          
+          #Set x_A = y_A = 0:
+          XA = XA + (1.0/omega_3D(kx,ky,kz))
+          PA = PA + omega_3D(kx,ky,kz)
+        #end loop over nz
+      #end loop over ny
+    #end loop over nx
+      
+    XA = 1.0/(2.0*Lx*Ly*Lz)*XA
+    PA = 1.0/(2.0*Lx*Ly*Lz)*PA
+#   elif bc == 'OBCDir':   #Dirichlet OBC: not sure how to extend properly to 3D (gives CA < 1/2)
+#     x_A = int(Lx)/2
+#     y_A = int(Ly)/2
+#     z_A = int(Lz)/2
+#     for nx in range(1,Lx+1):
+#       for ny in range(1,Ly+1):
+#         for nz in range(1,Lz+1):
+#           qx = nx*np.pi/(Lx+1)
+#           qy = ny*np.pi/(Ly+1)
+#           qz = nz*np.pi/(Lz+1)
+#           #use (x_A + 1) because Sharmistha's paper uses indices starting at 1
+#           XA = XA + np.sin(qx*(x_A+1))**2*np.sin(qy*(y_A+1))**2*np.sin(qz*(z_A+1))**2/omega_3D(qx,qy,qz)
+#           PA = PA + np.sin(qx*(x_A+1))**2*np.sin(qy*(y_A+1))**2*np.sin(qz*(z_A+1))**2*omega_3D(qx,qy,qz)
+#     XA = 2.0/((Lx+1)*(Ly+1)*(Lz+1))*XA
+#     PA = 2.0/((Lx+1)*(Ly+1)*(Lz+1))*PA
+#   #end OBC case
+  else:
+    print "\n*** ERROR: In 3D, the boundary condition '" + bc + "' is not accepted.***\n"
+  
+  return XA,PA
+
+###################################  getXAPA_singleSite_4D  ###################################
+# Gets the XA, PA numbers for the case where the system is 4D and region A is a single site.
+###############################################################################################
+def getXAPA_singleSite_4D(L,bc,alpha,massterm):
+  Lx = Ly = Lz = Lu = L
+  
+  def omega_4D(qx,qy,qz,qu):
+    return np.sqrt( 4*np.sin(qx/2.0)**2 + 4*np.sin(qy/2.0)**2 + 4*np.sin(qz/2.0)**2 + 4*np.sin(qu/2.0)**2 + massterm**2 )
+  
+  XA = 0
+  PA = 0
+  print bc
+  if bc in ['PBC', 'APBC', 'APBCx', 'APBCxy', 'APBCxyz']:   #PBC or APBC
+    for nx in range(Lx):
+      for ny in range(Ly):
+        for nz in range(Lz):
+          for nu in range(Lu):
+            if bc == 'PBC':
+              kx = 2*nx*np.pi/(Lx)
+              ky = 2*ny*np.pi/(Ly)
+              kz = 2*nz*np.pi/(Lz)
+              ku = 2*nu*np.pi/(Lu)
+            elif bc == 'APBC':
+              kx = (2*nx + 1)*np.pi/(Lx)
+              ky = (2*ny + 1)*np.pi/(Ly)
+              kz = (2*nz + 1)*np.pi/(Lz)
+              ku = (2*nu + 1)*np.pi/(Lu)
+            elif bc == 'APBCx':
+              kx = (2*nx + 1)*np.pi/(Lx)
+              ky = 2*ny*np.pi/(Ly)
+              kz = 2*nz*np.pi/(Lz)
+              ku = 2*nu*np.pi/(Lu)
+            elif bc == 'APBCxy':
+              kx = (2*nx + 1)*np.pi/(Lx)
+              ky = (2*ny + 1)*np.pi/(Ly)
+              kz = 2*nz*np.pi/(Lz)
+              ku = 2*nu*np.pi/(Lu)
+            else: #APBCxyz
+              kx = (2*nx + 1)*np.pi/(Lx)
+              ky = (2*ny + 1)*np.pi/(Ly)
+              kz = (2*nz + 1)*np.pi/(Lz)
+              ku = 2*nu*np.pi/(Lu)
+          
+            #Set x_A = y_A = 0:
+            XA = XA + (1.0/omega_4D(kx,ky,kz,ku))
+            PA = PA + omega_4D(kx,ky,kz,ku)
+          #end loop over nu
+        #end loop over nz
+      #end loop over ny
+    #end loop over nx
+      
+    XA = 1.0/(2.0*Lx*Ly*Lz*Lu)*XA
+    PA = 1.0/(2.0*Lx*Ly*Lz*Lu)*PA
+  else:
+    print "\n*** ERROR: In 3D, the boundary condition '" + bc + "' is not accepted.***\n"
+  
+  return XA,PA
+
 ###################################  getEntropy_singleSite  ###################################
-###############################################################################################
 # This method uses the known formulas for the correlation functions (for periodic or Dirichlet
 # boundary conditions). 
+###############################################################################################
 def getEntropy_singleSite(D,L,bc,alpha,massterm):
   XA = 0
   PA = 0
   
   if D==2:
     XA, PA = getXAPA_singleSite_2D(L,bc,alpha,massterm)
+  elif D==3:
+    XA, PA = getXAPA_singleSite_3D(L,bc,alpha,massterm)
+  elif D==4:
+    XA, PA = getXAPA_singleSite_4D(L,bc,alpha,massterm)
   else:
     print "\n*** ERROR: Calculations in %d dimensions are not supported.***\n" %D
   CA = np.sqrt(XA*PA)
@@ -151,9 +274,8 @@ def getEntropy_singleSite(D,L,bc,alpha,massterm):
 #................................END getEntropy_singleSite_2D..................................
 
 
-
-###############################################################################################
 ###########################################  site  ############################################
+# Takes 2D coordinates (x,y) and the lattice size to generate the site number
 ###############################################################################################
 def site((Lx,Ly),x,y):
-  return x + (y*Lx) #convert (x,y) pair to a single site number
+  return x + (y*Lx) 

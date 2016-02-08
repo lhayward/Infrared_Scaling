@@ -103,7 +103,7 @@ def readParams(filename):
 D,L_min,L_max,bc,massterm,alpha = readParams("input.txt")
 #############################
 
-BC_options = ['PBC', 'APBC', 'APBCx', 'APBCy', 'OBCDir', 'OBCNeu']
+BC_options = ['PBC', 'APBC', 'APBCx', 'APBCy', 'APBCxy', 'APBCxyz', 'OBCDir', 'OBCNeu']
 printInDir = False  #whether or not to print into directories names by BC
 
 if bc in BC_options:
